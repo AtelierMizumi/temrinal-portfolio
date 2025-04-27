@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Catppuccin Frappe Light Mode */
+    --background: 0 0% 100%;
+    --foreground: 229 20% 17%;
+    --card: 0 0% 100%;
+    --card-foreground: 229 20% 17%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 229 20% 17%;
+    --primary: 277 59% 76%; /* Mauve */
+    --primary-foreground: 229 20% 17%;
+    --secondary: 227 70% 87%; /* Text */
+    --secondary-foreground: 229 20% 17%;
+    --muted: 227 44% 80%; /* Subtext1 */
+    --muted-foreground: 228 22% 66%; /* Overlay2 */
+    --accent: 277 59% 76%; /* Mauve */
+    --accent-foreground: 229 20% 17%;
+    --destructive: 359 68% 71%; /* Red */
+    --destructive-foreground: 0 0% 98%;
+    --border: 227 17% 58%; /* Overlay1 */
+    --input: 227 17% 58%; /* Overlay1 */
+    --ring: 277 59% 76%; /* Mauve */
+    --radius: 0.5rem;
+
+    /* Additional Catppuccin Colors */
+    --rosewater: 10 57% 88%;
+    --flamingo: 0 59% 84%;
+    --pink: 316 73% 84%;
+    --mauve: 277 59% 76%;
+    --red: 359 68% 71%;
+    --maroon: 358 66% 76%;
+    --peach: 20 79% 70%;
+    --yellow: 40 62% 73%;
+    --green: 96 44% 68%;
+    --teal: 172 39% 65%;
+    --sky: 189 48% 73%;
+    --sapphire: 199 55% 69%;
+    --blue: 222 74% 74%;
+    --lavender: 239 66% 84%;
+  }
+
+  .dark {
+    /* Catppuccin Frappe Dark Mode */
+    --background: 229 19% 23%; /* Base */
+    --foreground: 227 70% 87%; /* Text */
+    --card: 231 19% 20%; /* Mantle */
+    --card-foreground: 227 70% 87%; /* Text */
+    --popover: 229 19% 23%; /* Base */
+    --popover-foreground: 227 70% 87%; /* Text */
+    --primary: 277 59% 76%; /* Mauve */
+    --primary-foreground: 229 20% 17%; /* Crust */
+    --secondary: 228 13% 44%; /* Surface2 */
+    --secondary-foreground: 227 70% 87%; /* Text */
+    --muted: 230 16% 30%; /* Surface0 */
+    --muted-foreground: 228 29% 73%; /* Subtext0 */
+    --accent: 277 59% 76%; /* Mauve */
+    --accent-foreground: 227 70% 87%; /* Text */
+    --destructive: 359 68% 71%; /* Red */
+    --destructive-foreground: 227 70% 87%; /* Text */
+    --border: 227 15% 37%; /* Surface1 */
+    --input: 227 15% 37%; /* Surface1 */
+    --ring: 277 59% 76%; /* Mauve */
+
+    /* Additional Catppuccin Colors */
+    --rosewater: 10 57% 88%;
+    --flamingo: 0 59% 84%;
+    --pink: 316 73% 84%;
+    --mauve: 277 59% 76%;
+    --red: 359 68% 71%;
+    --maroon: 358 66% 76%;
+    --peach: 20 79% 70%;
+    --yellow: 40 62% 73%;
+    --green: 96 44% 68%;
+    --teal: 172 39% 65%;
+    --sky: 189 48% 73%;
+    --sapphire: 199 55% 69%;
+    --blue: 222 74% 74%;
+    --lavender: 239 66% 84%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+}
+
+/* Terminal styles */
+.xterm {
+  height: 100%;
+  padding: 0.5rem;
+}
+
+/* Windows manager styles */
+.window {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.window-header {
+  @apply bg-card text-card-foreground;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  cursor: move;
+}
+
+.window-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.window-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.window-control {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.minimize {
+  background-color: hsl(var(--yellow));
+}
+
+.maximize {
+  background-color: hsl(var(--green));
+}
+
+.close {
+  background-color: hsl(var(--red));
+}
+
+.window-content {
+  @apply bg-background;
+  height: calc(100% - 35px);
+  overflow: auto;
+}
+
+/* Desktop styles */
+.desktop {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.taskbar {
+  @apply bg-card;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  z-index: 1000;
+}
+
+/* Terminal specific styles */
+.terminal-window .window-content {
+  padding: 0;
+  background-color: hsl(229 20% 17%, 0.8); /* Crust with transparency */
+  color: hsl(227 70% 87%); /* Text */
+  font-family: monospace;
+  backdrop-filter: blur(8px);
+}
+
+/* Background grid pattern */
+.bg-grid-pattern {
+  background-size: 50px 50px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
