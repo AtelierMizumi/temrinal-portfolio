@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import 'xterm/css/xterm.css';
 import { createTerminal } from '@/utils/terminal';
 
 interface TerminalComponentProps {
@@ -49,7 +50,7 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({
 
   return (
     <div 
-      className={`terminal-container h-full ${className}`}
+      className={`terminal-container h-full w-full ${className}`}
       ref={terminalRef}
     />
   );

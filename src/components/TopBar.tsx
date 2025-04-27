@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { 
   Calendar, 
   Music, 
-  Image, 
+  Image,
+  Paintbrush, 
   Play, 
   Pause, 
   SkipForward, 
@@ -17,6 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import fs from 'fs';
 import path from 'path';
+import { useTheme } from "./theme-provider";
 
 interface TopBarProps {
   onArchClick: () => void;
@@ -41,6 +43,9 @@ export const TopBar: React.FC<TopBarProps> = ({ onArchClick, onMusicOpen, onBack
   const [backgroundIndex, setBackgroundIndex] = useState(0);
   const [backgrounds, setBackgrounds] = useState<string[]>([]);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
+  
+  // Use theme context
+  const { cycleTheme } = useTheme();
 
   // Demo songs data
   const songs: Song[] = [
@@ -159,40 +164,34 @@ export const TopBar: React.FC<TopBarProps> = ({ onArchClick, onMusicOpen, onBack
     }
   };
 
-  // Change background
+  // Change background/theme
   const changeBackground = () => {
+    // Use theme context to cycle themes
+    cycleTheme();
+    
+    // Also call the passed in handler if available
     if (onBackgroundChange) {
       onBackgroundChange();
-    } else if (backgrounds.length > 0) {
-      // Fallback to local implementation
-      const nextIndex = (backgroundIndex + 1) % backgrounds.length;
-      setBackgroundIndex(nextIndex);
-      
-      // Apply the background to the main container
-      const mainContainer = document.querySelector('.absolute.inset-0.bg-cover.bg-center');
-      if (mainContainer) {
-        (mainContainer as HTMLElement).style.backgroundImage = `url('${backgrounds[nextIndex]}')`;
-      }
     }
   };
 
   return (
     <>
-      <div className="absolute top-0 left-0 right-0 h-10 bg-[#252525]/85 backdrop-blur-md border-b border-[#424242] flex items-center justify-between px-4 z-50">
+      <div className="absolute top-0 left-0 right-0 h-12 bg-[#252525]/40 backdrop-blur-lg border-b border-[#424242]/30 flex items-center justify-between px-4 z-50">
         {/* Left section - Arch menu button */}
         <div className="flex items-center">
           <button 
             onClick={onArchClick}
-            className="arch-button flex items-center justify-center w-8 h-8 rounded-full hover:bg-blue-500/30 transition-colors"
+            className="arch-button flex items-center justify-center w-9 h-9 rounded-full bg-blue-500/20 hover:bg-blue-500/40 backdrop-blur-md transition-colors"
           >
-            <img src="/archlinux-icon.svg" alt="Arch Linux" className="w-5 h-5" />
+            <img src="/arch-linux.png" alt="Arch Linux" className="w-5 h-5" />
           </button>
         </div>
 
         {/* Middle section - Date and Music */}
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-4">
           {/* Date and time */}
-          <div className="text-gray-300 flex items-center">
+          <div className="bg-[#2a2a2a]/60 backdrop-blur-md text-gray-300 flex items-center px-3 py-1.5 rounded-full">
             <Calendar className="w-4 h-4 mr-2" />
             <span className="text-sm">
               {format(currentTime, "MMMM d, yyyy")}
@@ -200,7 +199,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onArchClick, onMusicOpen, onBack
           </div>
 
           {/* Music controller */}
-          <div className="text-gray-300 flex items-center">
+          <div className="bg-[#2a2a2a]/60 backdrop-blur-md text-gray-300 flex items-center px-3 py-1.5 rounded-full">
             <button 
               onClick={() => {
                 if (onMusicOpen) {
@@ -209,7 +208,7 @@ export const TopBar: React.FC<TopBarProps> = ({ onArchClick, onMusicOpen, onBack
                   setIsMusicPlayerOpen(!isMusicPlayerOpen);
                 }
               }}
-              className="flex items-center hover:bg-white/10 px-2 py-1 rounded-md"
+              className="flex items-center hover:text-white transition-colors"
             >
               <Music className="w-4 h-4 mr-2" />
               <span className="text-sm">
@@ -219,14 +218,14 @@ export const TopBar: React.FC<TopBarProps> = ({ onArchClick, onMusicOpen, onBack
           </div>
         </div>
 
-        {/* Right section - Background changer */}
+        {/* Right section - Theme button */}
         <div className="flex items-center">
           <button 
             onClick={changeBackground}
-            className="text-gray-300 flex items-center hover:bg-white/10 px-2 py-1 rounded-md"
+            className="theme-button bg-[#2a2a2a]/60 backdrop-blur-md flex items-center justify-center w-9 h-9 rounded-full hover:bg-[#3a3a3a]/60 transition-colors"
+            title="Change theme"
           >
-            <Image className="w-4 h-4 mr-1" />
-            <span className="text-sm">Theme</span>
+            <Paintbrush className="w-4 h-4" />
           </button>
         </div>
       </div>

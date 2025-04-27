@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useWobbleEffect } from "./window-wobble-provider";
-import { animate} from "animejs";
+import { animate } from "animejs";
+import { format } from 'date-fns';
 
 interface WindowProps {
   id: string;
@@ -56,6 +57,8 @@ export const Window: React.FC<WindowProps> = ({
     size: { width: initialWidth, height: initialHeight },
   });
   const [currentDate, setCurrentDate] = useState<string>("");
+  const contentRef = useRef<HTMLDivElement>(null);
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Access the wobble context
   const { wobbleEnabled } = useWobbleEffect();
@@ -124,27 +127,24 @@ export const Window: React.FC<WindowProps> = ({
     }
   }, [showDate]);
 
-  const handleMouseDown = (
-    e: React.MouseEvent<HTMLDivElement>,
-    action: "drag" | "resize"
-  ) => {
+  const handleMouseDown = (e: React.MouseEvent, action: "drag" | "resize") => {
     if (action === "drag") {
       setIsDragging(true);
-      if (onFocus) onFocus();
       dragStartPosition.current = {
         x: e.clientX,
         y: e.clientY,
         windowX: position.x,
         windowY: position.y,
       };
-    } else if (action === "resize") {
+    } else if (action === "resize" && resizable) {
       setIsResizing(true);
-      if (onFocus) onFocus();
       resizeStartPosition.current = {
         x: e.clientX,
         y: e.clientY,
       };
     }
+    
+    if (onFocus) onFocus();
   };
 
   const handleMouseMove = (e: MouseEvent) => {
@@ -220,6 +220,14 @@ export const Window: React.FC<WindowProps> = ({
         duration: 300,
         easing: 'easeOutQuad'
       });
+      
+      // Adjust position if window would overlap with topbar
+      if (position.y < 48) { // 48px accounts for topbar height + some padding
+        setPosition({
+          ...position,
+          y: Math.max(48, position.y)
+        });
+      }
     }
   }, []);
   
@@ -341,31 +349,27 @@ export const Window: React.FC<WindowProps> = ({
       </div>
 
       <div 
+        ref={contentRef}
         className="window-content"
         style={{
           height: "calc(100% - 32px)",
           borderBottomLeftRadius: "0.75rem",
           borderBottomRightRadius: "0.75rem",
+          overflow: "hidden" // Ensure content doesn't overflow
         }}
       >
         {children}
       </div>
 
+      {/* Resize handle for non-maximized windows */}
       {resizable && !maximized && (
-        <div
-          className="window-resize-handle absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
+        <div 
+          className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
           onMouseDown={(e) => handleMouseDown(e, "resize")}
-        >
-          <svg
-            width="10"
-            height="10"
-            viewBox="0 0 10 10"
-            className="text-text/30"
-            fill="currentColor"
-          >
-            <path d="M0,10 L10,0 L10,10 Z" />
-          </svg>
-        </div>
+          style={{
+            backgroundImage: 'linear-gradient(135deg, transparent 50%, rgba(255, 255, 255, 0.3) 50%)',
+          }}
+        />
       )}
     </div>
   );

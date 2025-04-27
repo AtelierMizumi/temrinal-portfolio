@@ -1,4 +1,8 @@
 import { Terminal } from "xterm";
+import { runMatrixEffect } from "./terminal";
+
+// Track active effects for cleanup
+let activeMatrixEffect: (() => void) | null = null;
 
 // Define commands interface with xterm Terminal type
 interface Commands {
@@ -17,17 +21,22 @@ export const commands: Commands = {
     terminal.writeln("  projects - List my projects");
     terminal.writeln("  skills   - List my skills");
     terminal.writeln("  contact  - Show my contact information");
+    terminal.writeln("  cmatrix  - Run matrix effect (Ctrl+C to exit)");
   },
+  
   clear: async (terminal: Terminal) => {
     terminal.clear();
   },
+  
   echo: async (terminal: Terminal, args: string[]) => {
     terminal.writeln(args.join(" "));
   },
+  
   ls: async (terminal: Terminal, args: string[]) => {
     terminal.writeln("\x1b[1;34mprojects\x1b[0m  \x1b[1;34mdocs\x1b[0m  \x1b[1;34mskills\x1b[0m");
     terminal.writeln("\x1b[1;32mabout.txt\x1b[0m  \x1b[1;32mcontact.txt\x1b[0m  \x1b[1;32mresume.pdf\x1b[0m");
   },
+  
   cat: async (terminal: Terminal, args: string[]) => {
     if (args.length === 0) {
       terminal.writeln("Usage: cat <filename>");
@@ -51,11 +60,13 @@ export const commands: Commands = {
         terminal.writeln(`File not found: ${args[0]}`);
     }
   },
+  
   about: async (terminal: Terminal) => {
     terminal.writeln("Hi there! I'm a web developer with a passion for creating interactive");
     terminal.writeln("and responsive web applications. I specialize in React, TypeScript, and");
     terminal.writeln("Next.js. This terminal portfolio is a showcase of my skills.");
   },
+  
   projects: async (terminal: Terminal) => {
     terminal.writeln("\x1b[1;36mProjects:\x1b[0m");
     terminal.writeln("\x1b[1;33m1. Terminal Portfolio\x1b[0m");
@@ -65,17 +76,48 @@ export const commands: Commands = {
     terminal.writeln("\x1b[1;33m3. Project Three\x1b[0m");
     terminal.writeln("   Description of project three goes here");
   },
+  
   skills: async (terminal: Terminal) => {
     terminal.writeln("\x1b[1;36mSkills:\x1b[0m");
     terminal.writeln("\x1b[1;33mFrontend:\x1b[0m React, TypeScript, Next.js, HTML, CSS, TailwindCSS");
     terminal.writeln("\x1b[1;33mBackend:\x1b[0m Node.js, Express, MongoDB, PostgreSQL");
     terminal.writeln("\x1b[1;33mTools:\x1b[0m Git, Docker, Webpack, Jest");
   },
+  
   contact: async (terminal: Terminal) => {
     terminal.writeln("\x1b[1;36mContact Information:\x1b[0m");
     terminal.writeln("Email: example@example.com");
     terminal.writeln("GitHub: github.com/username");
     terminal.writeln("LinkedIn: linkedin.com/in/username");
     terminal.writeln("Twitter: @username");
-  }
+  },
+  
+  cmatrix: async (terminal: Terminal) => {
+    // Clear any existing matrix effect
+    if (activeMatrixEffect) {
+      activeMatrixEffect();
+      activeMatrixEffect = null;
+    }
+    
+    terminal.writeln("Starting Matrix effect... Press any key to exit.");
+    
+    // Start a new matrix effect
+    activeMatrixEffect = runMatrixEffect(terminal);
+    
+    // Set up exit handler
+    const exitHandler = terminal.onKey(() => {
+      // Stop matrix effect on any keypress
+      if (activeMatrixEffect) {
+        activeMatrixEffect();
+        activeMatrixEffect = null;
+      }
+      
+      // Remove this handler
+      exitHandler.dispose();
+      
+      // Clear terminal and restore prompt
+      terminal.clear();
+      terminal.write("Matrix effect terminated.\r\n");
+    });
+  },
 };

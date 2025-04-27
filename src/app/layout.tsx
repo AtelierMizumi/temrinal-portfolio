@@ -12,7 +12,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: 'Terminal Portfolio',
-  description: 'A portfolio website designed as a terminal interface',
+  description: 'A terminal-style portfolio website',
 }
 
 export default function RootLayout({
@@ -21,13 +21,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-[#1E202C] text-foreground`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-        >
+        <ThemeProvider>
           {children}
         </ThemeProvider>
       </body>
