@@ -7,7 +7,8 @@ import {
   SkipForward, 
   SkipBack,
   Volume2,
-  VolumeX
+  VolumeX,
+  Music
 } from "lucide-react";
 
 interface MusicPlayerProps {

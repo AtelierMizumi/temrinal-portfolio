@@ -20,6 +20,8 @@ import path from 'path';
 
 interface TopBarProps {
   onArchClick: () => void;
+  onMusicOpen?: () => void;
+  onBackgroundChange?: () => void;
 }
 
 interface Song {
@@ -29,7 +31,7 @@ interface Song {
   path: string;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({ onArchClick }) => {
+export const TopBar: React.FC<TopBarProps> = ({ onArchClick, onMusicOpen, onBackgroundChange }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isMusicPlayerOpen, setIsMusicPlayerOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -159,16 +161,18 @@ export const TopBar: React.FC<TopBarProps> = ({ onArchClick }) => {
 
   // Change background
   const changeBackground = () => {
-    if (backgrounds.length === 0) return;
-    
-    const nextIndex = (backgroundIndex + 1) % backgrounds.length;
-    setBackgroundIndex(nextIndex);
-    
-    // Apply the background to the main container
-    // In a real app, this would update a state in the parent component
-    const mainContainer = document.querySelector('.absolute.inset-0.bg-cover.bg-center');
-    if (mainContainer) {
-      (mainContainer as HTMLElement).style.backgroundImage = `url('${backgrounds[nextIndex]}')`;
+    if (onBackgroundChange) {
+      onBackgroundChange();
+    } else if (backgrounds.length > 0) {
+      // Fallback to local implementation
+      const nextIndex = (backgroundIndex + 1) % backgrounds.length;
+      setBackgroundIndex(nextIndex);
+      
+      // Apply the background to the main container
+      const mainContainer = document.querySelector('.absolute.inset-0.bg-cover.bg-center');
+      if (mainContainer) {
+        (mainContainer as HTMLElement).style.backgroundImage = `url('${backgrounds[nextIndex]}')`;
+      }
     }
   };
 
@@ -198,7 +202,13 @@ export const TopBar: React.FC<TopBarProps> = ({ onArchClick }) => {
           {/* Music controller */}
           <div className="text-gray-300 flex items-center">
             <button 
-              onClick={() => setIsMusicPlayerOpen(!isMusicPlayerOpen)}
+              onClick={() => {
+                if (onMusicOpen) {
+                  onMusicOpen();
+                } else {
+                  setIsMusicPlayerOpen(!isMusicPlayerOpen);
+                }
+              }}
               className="flex items-center hover:bg-white/10 px-2 py-1 rounded-md"
             >
               <Music className="w-4 h-4 mr-2" />
@@ -221,9 +231,9 @@ export const TopBar: React.FC<TopBarProps> = ({ onArchClick }) => {
         </div>
       </div>
 
-      {/* Music Player Dialog */}
+      {/* Music Player Dialog - Only shown when using TopBar's internal player */}
       <AnimatePresence>
-        {isMusicPlayerOpen && (
+        {isMusicPlayerOpen && !onMusicOpen && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}

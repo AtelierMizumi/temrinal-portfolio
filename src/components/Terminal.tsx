@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { XTerm } from "xterm-for-react";
+import { Terminal as XTerm } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { WebLinksAddon } from "xterm-addon-web-links";
 import { commands } from "../utils/commands";
+import "xterm/css/xterm.css";
 
 interface TerminalProps {
   className?: string;
@@ -17,22 +18,23 @@ const Terminal: React.FC<TerminalProps> = ({ className }) => {
   const [cursorPosition, setCursorPosition] = useState(0);
   const [isProcessingCommand, setIsProcessingCommand] = useState(false);
   
+  const terminalRef = useRef<HTMLDivElement>(null);
   const xtermRef = useRef<XTerm | null>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
   
-  // Initialize addons and terminal
+  // Initialize terminal
   useEffect(() => {
+    // Initialize addons
     fitAddonRef.current = new FitAddon();
+    const webLinksAddon = new WebLinksAddon();
     
-    if (xtermRef.current) {
-      const term = xtermRef.current.terminal;
-      
-      // Configure terminal options
-      term.options.cursorBlink = true;
-      term.options.cursorStyle = "block";
-      term.options.fontFamily = "monospace";
-      term.options.fontSize = 14;
-      term.options.theme = {
+    // Create terminal instance
+    const term = new XTerm({
+      cursorBlink: true,
+      cursorStyle: "block",
+      fontFamily: "monospace",
+      fontSize: 14,
+      theme: {
         background: "#1a1b26",
         foreground: "#c0caf5",
         cursor: "#c0caf5",
@@ -45,40 +47,58 @@ const Terminal: React.FC<TerminalProps> = ({ className }) => {
         red: "#f7768e",
         white: "#a9b1d6",
         yellow: "#e0af68"
-      };
+      }
+    });
+    
+    // Save terminal reference
+    xtermRef.current = term;
+    
+    // Load addons
+    term.loadAddon(fitAddonRef.current);
+    term.loadAddon(webLinksAddon);
+    
+    // Open terminal in the DOM
+    if (terminalRef.current) {
+      term.open(terminalRef.current);
+      fitAddonRef.current.fit();
       
-      // Clear terminal and write welcome message
-      term.reset();
+      // Write welcome message
       term.writeln("Welcome to the Terminal Portfolio!");
       term.writeln("Type 'help' to see available commands.");
       term.writeln("");
       writePrompt();
+      
+      // Listen to terminal data events (keystrokes)
+      term.onData(handleTerminalInput);
+      
+      // Listen for window resize events
+      window.addEventListener('resize', fitTerminal);
     }
     
-    // Fit terminal to container
-    fitTerminal();
-    
-    // Listen to window resize events
-    window.addEventListener("resize", fitTerminal);
-    
     return () => {
-      window.removeEventListener("resize", fitTerminal);
+      // Cleanup
+      if (xtermRef.current) {
+        xtermRef.current.dispose();
+      }
+      window.removeEventListener('resize', fitTerminal);
     };
   }, []);
   
   // Fit terminal to container size
   const fitTerminal = () => {
-    if (fitAddonRef.current && xtermRef.current) {
-      setTimeout(() => {
-        fitAddonRef.current?.fit();
-      }, 0);
+    if (fitAddonRef.current) {
+      try {
+        fitAddonRef.current.fit();
+      } catch (err) {
+        console.error("Failed to fit terminal:", err);
+      }
     }
   };
   
   // Write prompt to terminal
   const writePrompt = () => {
     if (xtermRef.current) {
-      xtermRef.current.terminal.write("\r\n\x1b[1;32mvisitor\x1b[0m@\x1b[1;34mportfolio\x1b[0m:\x1b[1;34m~$\x1b[0m ");
+      xtermRef.current.write("\r\n\x1b[1;32mvisitor\x1b[0m@\x1b[1;34mportfolio\x1b[0m:\x1b[1;34m~$\x1b[0m ");
     }
   };
   
@@ -102,8 +122,7 @@ const Terminal: React.FC<TerminalProps> = ({ className }) => {
           
           // Update terminal display
           if (xtermRef.current) {
-            const term = xtermRef.current.terminal;
-            term.write('\b \b'); // Clear character
+            xtermRef.current.write('\b \b'); // Clear character
           }
         }
         break;
@@ -120,7 +139,7 @@ const Terminal: React.FC<TerminalProps> = ({ className }) => {
         if (cursorPosition < currentCommand.length) {
           setCursorPosition(cursorPosition + 1);
           if (xtermRef.current) {
-            xtermRef.current.terminal.write(data);
+            xtermRef.current.write(data);
           }
         }
         break;
@@ -129,7 +148,7 @@ const Terminal: React.FC<TerminalProps> = ({ className }) => {
         if (cursorPosition > 0) {
           setCursorPosition(cursorPosition - 1);
           if (xtermRef.current) {
-            xtermRef.current.terminal.write(data);
+            xtermRef.current.write(data);
           }
         }
         break;
@@ -146,10 +165,7 @@ const Terminal: React.FC<TerminalProps> = ({ className }) => {
           setCursorPosition(cursorPosition + 1);
           
           if (xtermRef.current) {
-            const term = xtermRef.current.terminal;
-            
-            // Write the character at cursor position
-            term.write(char);
+            xtermRef.current.write(char);
           }
         }
         break;
@@ -166,7 +182,7 @@ const Terminal: React.FC<TerminalProps> = ({ className }) => {
     setIsProcessingCommand(true);
     
     if (xtermRef.current) {
-      const term = xtermRef.current.terminal;
+      const term = xtermRef.current;
       term.write("\r\n");
       
       const trimmedCommand = currentCommand.trim();
@@ -213,8 +229,7 @@ const Terminal: React.FC<TerminalProps> = ({ className }) => {
       setCursorPosition(0);
       
       if (xtermRef.current) {
-        const term = xtermRef.current.terminal;
-        term.write("\r\x1b[2K\x1b[1;32mvisitor\x1b[0m@\x1b[1;34mportfolio\x1b[0m:\x1b[1;34m~$\x1b[0m ");
+        xtermRef.current.write("\r\x1b[2K\x1b[1;32mvisitor\x1b[0m@\x1b[1;34mportfolio\x1b[0m:\x1b[1;34m~$\x1b[0m ");
       }
     } else {
       const historyCommand = commandHistory[newIndex];
@@ -222,20 +237,14 @@ const Terminal: React.FC<TerminalProps> = ({ className }) => {
       setCursorPosition(historyCommand.length);
       
       if (xtermRef.current) {
-        const term = xtermRef.current.terminal;
-        term.write("\r\x1b[2K\x1b[1;32mvisitor\x1b[0m@\x1b[1;34mportfolio\x1b[0m:\x1b[1;34m~$\x1b[0m " + historyCommand);
+        xtermRef.current.write("\r\x1b[2K\x1b[1;32mvisitor\x1b[0m@\x1b[1;34mportfolio\x1b[0m:\x1b[1;34m~$\x1b[0m " + historyCommand);
       }
     }
   };
 
   return (
     <div className={`h-full ${className}`}>
-      <XTerm
-        ref={xtermRef}
-        addons={[fitAddonRef.current, new WebLinksAddon()]}
-        onData={handleTerminalInput}
-        className="h-full"
-      />
+      <div ref={terminalRef} className="h-full" />
     </div>
   );
 };

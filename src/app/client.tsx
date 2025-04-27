@@ -9,6 +9,7 @@ import { GamesExplorer } from "../components/GamesExplorer";
 import { WobbleProvider } from "../components/window-wobble-provider";
 import { ThemeProvider } from "../components/theme-provider";
 import { animate, createScope } from "animejs";
+import MusicPlayer from "../components/MusicPlayer";
 
 // Dynamically import Terminal to prevent SSR issues
 const Terminal = dynamic(() => import('../components/Terminal'), { 
@@ -46,8 +47,26 @@ export const Client: React.FC = () => {
   const [activeWindowId, setActiveWindowId] = useState<string>("terminal-1");
   const [maxZIndex, setMaxZIndex] = useState(1);
   const [gamesExplorerOpen, setGamesExplorerOpen] = useState(false);
+  const [currentBackground, setCurrentBackground] = useState("/background/bg1.jpg");
+  const [backgroundIndex, setBackgroundIndex] = useState(0);
+  
   const clientRef = useRef<HTMLDivElement>(null);
   const animationScope = useRef<any>(null);
+
+  // Available backgrounds
+  const backgrounds = [
+    "/background/bg1.jpg",
+    "/background/bg2.jpg",
+    "/background/bg3.jpg",
+    "/background/bg4.jpg",
+  ];
+
+  // Function to cycle backgrounds
+  const cycleBackground = useCallback(() => {
+    const nextIndex = (backgroundIndex + 1) % backgrounds.length;
+    setBackgroundIndex(nextIndex);
+    setCurrentBackground(backgrounds[nextIndex]);
+  }, [backgroundIndex, backgrounds]);
 
   // Function to bring a window to front
   const bringToFront = useCallback((id: string) => {
@@ -93,6 +112,27 @@ export const Client: React.FC = () => {
     setActiveWindowId(newId);
   }, [maxZIndex]);
 
+  // Create a music player window
+  const openMusicPlayer = useCallback(() => {
+    const newZIndex = maxZIndex + 1;
+    const newId = `music-${Date.now()}`;
+    
+    setWindows((prev) => [
+      ...prev,
+      {
+        id: newId,
+        type: "music",
+        zIndex: newZIndex,
+        initialX: 150,
+        initialY: 100,
+        title: "Music Player",
+      },
+    ]);
+    
+    setMaxZIndex(newZIndex);
+    setActiveWindowId(newId);
+  }, [maxZIndex]);
+
   // Close a window
   const closeWindow = useCallback((id: string) => {
     setWindows((prev) => prev.filter((w) => w.id !== id));
@@ -119,27 +159,6 @@ export const Client: React.FC = () => {
     setMaxZIndex(newZIndex);
     setActiveWindowId(newId);
     setGamesExplorerOpen(false);
-  }, [maxZIndex]);
-
-  // Create a music player window
-  const openMusicPlayer = useCallback(() => {
-    const newZIndex = maxZIndex + 1;
-    const newId = `music-${Date.now()}`;
-    
-    setWindows((prev) => [
-      ...prev,
-      {
-        id: newId,
-        type: "music",
-        zIndex: newZIndex,
-        initialX: 150,
-        initialY: 100,
-        title: "Music Player",
-      },
-    ]);
-    
-    setMaxZIndex(newZIndex);
-    setActiveWindowId(newId);
   }, [maxZIndex]);
 
   // Set up animations with createScope
@@ -171,10 +190,9 @@ export const Client: React.FC = () => {
           <div ref={clientRef} className="relative w-screen h-screen overflow-hidden bg-background">
             {/* Desktop background */}
             <div
-              className="absolute inset-0 bg-cover bg-center"
+              className="absolute inset-0 bg-cover bg-center transition-all duration-500"
               style={{
-                backgroundImage:
-                  "url('https://images.unsplash.com/photo-1579546929662-711aa81148cf?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')",
+                backgroundImage: `url('${currentBackground}')`,
               }}
             />
 
@@ -196,6 +214,25 @@ export const Client: React.FC = () => {
                     showDate={true}
                   >
                     <Terminal className="h-full" />
+                  </Window>
+                );
+              }
+              if (window.type === "music") {
+                return (
+                  <Window
+                    key={window.id}
+                    id={window.id}
+                    title={window.title}
+                    zIndex={window.zIndex}
+                    initialX={window.initialX}
+                    initialY={window.initialY}
+                    initialWidth={400}
+                    initialHeight={550}
+                    onClose={() => closeWindow(window.id)}
+                    onFocus={() => bringToFront(window.id)}
+                    showDate={false}
+                  >
+                    <MusicPlayer className="h-full" />
                   </Window>
                 );
               }
@@ -252,12 +289,15 @@ export const Client: React.FC = () => {
                   animationScope.current.methods.archButtonAnimation();
                 }
               }}
+              onMusicOpen={openMusicPlayer}
+              onBackgroundChange={cycleBackground}
             />
             
             <ArchMenu
               isOpen={archMenuOpen}
               onClose={() => setArchMenuOpen(false)}
               onTerminalOpen={createTerminal}
+              onMusicOpen={openMusicPlayer}
               onGameMenuOpen={() => {
                 setGamesExplorerOpen(true);
                 setArchMenuOpen(false);

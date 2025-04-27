@@ -1,128 +1,139 @@
+"use client";
+
 import React, { useEffect, useRef } from "react";
-import { animate } from "animejs";
+import { motion, AnimatePresence } from "framer-motion";
+import { Terminal, Gamepad, Music, Info, FileText, X } from "lucide-react";
 
 interface ArchMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  onTerminalOpen?: () => void; // Add this prop for terminal spawning
-  onGameMenuOpen?: () => void; // Add this prop for games menu
+  onTerminalOpen: () => void;
+  onMusicOpen?: () => void;
+  onGameMenuOpen: () => void;
 }
 
-export const ArchMenu: React.FC<ArchMenuProps> = ({ 
-  isOpen, 
-  onClose, 
+export const ArchMenu: React.FC<ArchMenuProps> = ({
+  isOpen,
+  onClose,
   onTerminalOpen,
-  onGameMenuOpen
+  onMusicOpen,
+  onGameMenuOpen,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Close menu when clicking outside
   useEffect(() => {
-    if (isOpen && menuRef.current) {
-      // Enhanced animation for menu opening
-      animate(menuRef.current, {
-        translateY: [-20, 0],
-        opacity: [0, 1],
-        duration: 300,
-        easing: 'easeOutQuad'
-      });
-    }
-  }, [isOpen]);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node) && isOpen) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, onClose]);
 
   return (
-    <div
-      ref={menuRef}
-      className={`arch-menu absolute bottom-12 left-3 rounded-lg shadow-lg overflow-hidden z-50 ${
-        isOpen ? "block" : "hidden"
-      }`}
-      style={{
-        backgroundColor: "rgba(20, 22, 30, 0.8)",
-        backdropFilter: "blur(12px)",
-        border: "1px solid rgba(81, 87, 109, 0.3)",
-        minWidth: "200px",
-      }}
-    >
-      <div className="flex flex-col p-1">
-        <MenuOption 
-          icon="🏠" 
-          label="Home" 
-          onClick={() => {
-            // Home action
-            if (menuRef.current) {
-              animate(menuRef.current, {
-                opacity: 0,
-                translateY: -10,
-                duration: 200,
-                easing: 'easeOutQuad',
-                complete: onClose
-              });
-            } else {
-              onClose();
-            }
-          }} 
-        />
-        <MenuOption 
-          icon="💻" 
-          label="Terminal" 
-          onClick={() => {
-            if (onTerminalOpen && menuRef.current) {
-              // Animate before spawning new terminal
-              animate(menuRef.current, {
-                opacity: [1, 0],
-                translateY: [0, -10],
-                duration: 200,
-                easing: 'easeOutQuad',
-                complete: () => {
-                  onClose();
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          ref={menuRef}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.1 }}
+          className="absolute left-4 top-12 w-64 bg-[#1e1e2e] border border-[#313244] rounded-lg shadow-xl z-50 overflow-hidden"
+        >
+          <div className="p-2">
+            <div className="flex justify-between items-center p-2">
+              <span className="text-gray-300 font-medium">Menu</span>
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-gray-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="mt-2 grid grid-cols-1 gap-1">
+              <button
+                onClick={() => {
                   onTerminalOpen();
-                }
-              });
-            } else {
-              onClose();
-            }
-          }} 
-        />
-        <MenuOption 
-          icon="🎮" 
-          label="Games" 
-          onClick={() => {
-            if (onGameMenuOpen && menuRef.current) {
-              // Animate before opening games menu
-              animate(menuRef.current, {
-                opacity: [1, 0],
-                translateY: [0, -10],
-                duration: 200,
-                easing: 'easeOutQuad',
-                complete: () => {
                   onClose();
+                }}
+                className="flex items-center p-2 rounded-md text-left hover:bg-[#313244] group"
+              >
+                <div className="w-8 h-8 bg-[#313244] group-hover:bg-[#45475a] rounded-full flex items-center justify-center mr-2">
+                  <Terminal className="w-4 h-4 text-green-400" />
+                </div>
+                <div>
+                  <div className="text-gray-300 font-medium">Terminal</div>
+                  <div className="text-gray-500 text-xs">Command line interface</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => {
+                  if (onMusicOpen) {
+                    onMusicOpen();
+                    onClose();
+                  }
+                }}
+                className="flex items-center p-2 rounded-md text-left hover:bg-[#313244] group"
+              >
+                <div className="w-8 h-8 bg-[#313244] group-hover:bg-[#45475a] rounded-full flex items-center justify-center mr-2">
+                  <Music className="w-4 h-4 text-purple-400" />
+                </div>
+                <div>
+                  <div className="text-gray-300 font-medium">Music Player</div>
+                  <div className="text-gray-500 text-xs">Listen to music</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => {
                   onGameMenuOpen();
-                }
-              });
-            } else {
-              onClose();
-            }
-          }} 
-        />
-        
-        {/* ...existing menu options... */}
-      </div>
-    </div>
-  );
-};
+                }}
+                className="flex items-center p-2 rounded-md text-left hover:bg-[#313244] group"
+              >
+                <div className="w-8 h-8 bg-[#313244] group-hover:bg-[#45475a] rounded-full flex items-center justify-center mr-2">
+                  <Gamepad className="w-4 h-4 text-blue-400" />
+                </div>
+                <div>
+                  <div className="text-gray-300 font-medium">Arcade Games</div>
+                  <div className="text-gray-500 text-xs">Play browser games</div>
+                </div>
+              </button>
 
-interface MenuOptionProps {
-  icon: string;
-  label: string;
-  onClick: () => void;
-}
+              <button className="flex items-center p-2 rounded-md text-left hover:bg-[#313244] group">
+                <div className="w-8 h-8 bg-[#313244] group-hover:bg-[#45475a] rounded-full flex items-center justify-center mr-2">
+                  <Info className="w-4 h-4 text-yellow-400" />
+                </div>
+                <div>
+                  <div className="text-gray-300 font-medium">About</div>
+                  <div className="text-gray-500 text-xs">Project information</div>
+                </div>
+              </button>
 
-const MenuOption: React.FC<MenuOptionProps> = ({ icon, label, onClick }) => {
-  return (
-    <div
-      className="menu-option flex items-center p-2 cursor-pointer hover:bg-gray-700 rounded-md"
-      onClick={onClick}
-    >
-      <span className="mr-2">{icon}</span>
-      <span>{label}</span>
-    </div>
+              <button className="flex items-center p-2 rounded-md text-left hover:bg-[#313244] group">
+                <div className="w-8 h-8 bg-[#313244] group-hover:bg-[#45475a] rounded-full flex items-center justify-center mr-2">
+                  <FileText className="w-4 h-4 text-red-400" />
+                </div>
+                <div>
+                  <div className="text-gray-300 font-medium">Resume</div>
+                  <div className="text-gray-500 text-xs">View my resume</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-2 py-2 px-4 bg-[#181825] border-t border-[#313244]">
+            <div className="text-gray-400 text-xs">Terminal Portfolio</div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
