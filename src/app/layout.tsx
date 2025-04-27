@@ -1,29 +1,36 @@
-import "@/app/globals.css";
-import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/theme-provider";
+import './globals.css'
+import type { Metadata } from 'next'
+import { Inter, JetBrains_Mono } from 'next/font/google'
+import { ThemeProvider } from '@/components/theme-provider'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
+const jetbrainsMono = JetBrains_Mono({ 
+  subsets: ['latin'], 
+  variable: '--font-mono',
+  weight: ['400', '500', '600', '700']
+})
 
 export const metadata: Metadata = {
-  title: "Portfolio Terminal",
-  description: "A portfolio site with a Linux-style window manager and terminal",
-};
+  title: 'Terminal Portfolio',
+  description: 'A portfolio website designed as a terminal interface',
+}
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body>
+    <html lang="en" className="dark">
+      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-[#1E202C] text-foreground`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
           enableSystem
-          disableTransitionOnChange
         >
           {children}
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

@@ -2,11 +2,10 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-	],
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
   theme: {
     container: {
       center: true,
@@ -44,6 +43,10 @@ module.exports = {
         base: "#303446",
         mantle: "#292c3c",
         crust: "#232634",
+        background: '#1E202C',
+        foreground: '#f8f8f2',
+        card: "#292c3c",
+        "card-foreground": "#c6d0f5",
       },
       keyframes: {
         "accordion-down": {

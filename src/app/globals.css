@@ -83,14 +83,13 @@
   }
 }
 
-/* Base styles with apply */
-* {
-  @apply border-[hsl(var(--border))];
-}
-body {
-  @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
-  min-height: 100vh;
-  overflow: hidden;
+@layer base {
+  * {
+    @apply border-[hsl(var(--border))];
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
 /* Terminal styles */
@@ -107,7 +106,7 @@ body {
 }
 
 .window-header {
-  @apply bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))];
+  @apply bg-card text-card-foreground;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -145,7 +144,7 @@ body {
 }
 
 .window-content {
-  @apply bg-[hsl(var(--background))];
+  @apply bg-background;
   height: calc(100% - 35px);
   overflow: auto;
 }
@@ -159,7 +158,7 @@ body {
 }
 
 .taskbar {
-  @apply bg-[hsl(var(--card))];
+  @apply bg-card;
   position: absolute;
   bottom: 0;
   left: 0;

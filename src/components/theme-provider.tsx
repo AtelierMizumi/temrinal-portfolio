@@ -1,125 +1,77 @@
 "use client";
 
-import type * as React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
+import { animate } from "animejs";
 
-type Theme = "dark" | "light" | "system";
+type Theme = "dark" | "light";
 
-type ThemeProviderProps = {
+interface ThemeProviderProps {
   children: React.ReactNode;
   defaultTheme?: Theme;
   storageKey?: string;
-  attribute?: string;
-  enableSystem?: boolean;
-  disableTransitionOnChange?: boolean;
-};
+}
 
-type ThemeProviderState = {
+interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-};
+}
 
-const initialState: ThemeProviderState = {
-  theme: "system",
-  setTheme: () => null,
-};
-
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
-  storageKey = "theme",
-  attribute = "data-theme",
-  enableSystem = true,
-  disableTransitionOnChange = false,
+  defaultTheme = "dark",
+  storageKey = "ui-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (typeof window !== "undefined" ?
-           (localStorage.getItem(storageKey) as Theme) || defaultTheme :
-           defaultTheme)
-  );
+  const [theme, setTheme] = useState<Theme>(defaultTheme);
 
   useEffect(() => {
-    const root = window.document.documentElement;
-
-    // Remove old attribute values
-    const dataTheme = root.getAttribute(attribute);
-    if (dataTheme) {
-      root.removeAttribute(attribute);
+    const savedTheme = localStorage.getItem(storageKey) as Theme | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
     }
+  }, [storageKey]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    
+    // Remove class and add new theme class
     root.classList.remove("light", "dark");
-
-    // Handle system theme
-    if (theme === "system" && enableSystem) {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
-
-      root.classList.add(systemTheme);
-      return;
+    root.classList.add(theme);
+    
+    // Persist to local storage
+    localStorage.setItem(storageKey, theme);
+    
+    // Add animation for smooth transition
+    const elements = document.querySelectorAll(".window, .taskbar, .arch-menu, button");
+    if (elements.length > 0) {
+      animate(elements, {
+        opacity: [0.9, 1],
+        duration: 300,
+        easing: 'easeOutQuad'
+      });
     }
-
-    // Set theme (either class or attribute based on attribute prop)
-    if (attribute === "class") {
-      root.classList.add(theme);
-    } else {
-      root.setAttribute(attribute, theme);
-      root.classList.add(theme);
-    }
-  }, [theme, attribute, enableSystem]);
-
-  // Handle system theme changes
-  useEffect(() => {
-    if (!enableSystem) return;
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-
-    const handleChange = () => {
-      if (theme === "system") {
-        const root = window.document.documentElement;
-        root.classList.remove("light", "dark");
-
-        const systemTheme = mediaQuery.matches ? "dark" : "light";
-        root.classList.add(systemTheme);
-      }
-    };
-
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme, enableSystem]);
+  }, [storageKey, theme]);
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+    setTheme: (newTheme: Theme) => {
+      setTheme(newTheme);
     },
   };
 
   return (
-    <ThemeProviderContext.Provider {...props} value={value}>
-      {disableTransitionOnChange && (
-        <style>{`
-          *,
-          *::before,
-          *::after {
-            transition: none !important;
-          }
-        `}</style>
-      )}
+    <ThemeContext.Provider value={value} {...props}>
       {children}
-    </ThemeProviderContext.Provider>
+    </ThemeContext.Provider>
   );
 }
 
 export const useTheme = () => {
-  const context = useContext(ThemeProviderContext);
-
-  if (context === undefined)
+  const context = useContext(ThemeContext);
+  if (!context) {
     throw new Error("useTheme must be used within a ThemeProvider");
-
+  }
   return context;
 };
