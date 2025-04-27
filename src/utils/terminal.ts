@@ -125,82 +125,118 @@ export const createTerminal = ({
   return { terminal, fitAddon, handleResize, dispose };
 };
 
-// Matrix effect function for the cmatrix command
-export const runMatrixEffect = (terminal: Terminal) => {
-  // Clear terminal before starting effect
-  terminal.clear();
-  
+// Matrix character generation
+export function runMatrixEffect(terminal: Terminal): () => void {
+  // Get terminal dimensions
   const cols = terminal.cols;
   const rows = terminal.rows;
   
-  // Characters for the matrix effect
-  const chars = '01'.split('');
+  // Clear terminal before starting
+  terminal.clear();
   
-  // Create columns with different drop speeds and starting positions
-  const columns = [...Array(cols)].map(() => ({
-    pos: Math.floor(Math.random() * rows * 2) - rows, // Random starting position
-    speed: Math.random() * 0.5 + 0.5, // Random speed
-    length: Math.floor(Math.random() * rows/3) + 5, // Random stream length
-    char: () => chars[Math.floor(Math.random() * chars.length)],
-  }));
+  // Create matrix data structure
+  const matrix: number[] = new Array(cols).fill(0);
+  const characters: string[][] = Array.from({ length: cols }, () => 
+    Array.from({ length: rows }, () => ' '));
+  const brightness: number[][] = Array.from({ length: cols }, () => 
+    Array.from({ length: rows }, () => 0));
   
-  // Track if effect is still running
-  let isRunning = true;
+  // Animation frame ID for cleanup
+  let animationFrameId: number;
   
-  // Animation loop
-  const loop = () => {
-    if (!isRunning) return;
-    
-    // Clear the terminal (optional, depends on desired effect)
-    // terminal.clear();
-    
-    // Build the frame
+  // Random characters for matrix effect
+  const getRandomChar = () => {
+    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$+-*/=%\"'#&_(),.;:?!\\|{}<>[]^~";
+    return chars.charAt(Math.floor(Math.random() * chars.length));
+  };
+  
+  // Update function for animation
+  const update = () => {
+    // For each column
     for (let i = 0; i < cols; i++) {
-      const column = columns[i];
-      
-      // Update column position
-      column.pos += column.speed;
-      
-      // Draw the characters in the column
-      for (let j = 0; j < column.length; j++) {
-        const row = Math.floor(column.pos) - j;
-        
-        if (row >= 0 && row < rows) {
-          const brightness = j === 0 ? 1 : (column.length - j) / column.length;
-          
-          // Position cursor
-          terminal.write(`\x1b[${row + 1};${i + 1}H`);
-          
-          // Different colors for different positions in the stream
-          if (j === 0) {
-            terminal.write(`\x1b[1;97m${column.char()}\x1b[0m`); // Bright head
-          } else if (j < 3) {
-            terminal.write(`\x1b[1;32m${column.char()}\x1b[0m`); // Bright green
-          } else {
-            terminal.write(`\x1b[32m${column.char()}\x1b[0m`); // Dark green
-          }
-        }
+      // Random chance to create a new drop
+      if (Math.random() < 0.02 && matrix[i] === 0) {
+        matrix[i] = 1;
       }
       
-      // Reset column if it's fully off-screen
-      if (column.pos - column.length > rows) {
-        column.pos = -Math.floor(Math.random() * 10);
+      // If there's an active drop in this column
+      if (matrix[i] > 0) {
+        // Fade previous characters
+        for (let j = 0; j < rows; j++) {
+          if (brightness[i][j] > 0) {
+            brightness[i][j] -= 0.05; // Fade effect
+            if (brightness[i][j] <= 0) {
+              brightness[i][j] = 0;
+              characters[i][j] = ' ';
+            }
+          }
+        }
+        
+        // Set a new character at the drop position
+        const y = matrix[i] - 1;
+        if (y < rows) {
+          characters[i][y] = getRandomChar();
+          brightness[i][y] = 1; // Full brightness for new character
+        }
+        
+        // Move the drop down
+        matrix[i]++;
+        
+        // If the drop goes off screen, reset it
+        if (matrix[i] > rows + Math.random() * 15) {
+          matrix[i] = 0;
+        }
       }
     }
     
-    // Schedule next frame
-    setTimeout(() => {
-      if (isRunning) {
-        requestAnimationFrame(loop);
+    // Render the matrix
+    render();
+    
+    // Continue animation
+    animationFrameId = requestAnimationFrame(update);
+  };
+  
+  // Render function
+  const render = () => {
+    terminal.write("\x1b[H"); // Move cursor to top-left
+    
+    for (let j = 0; j < rows; j++) {
+      for (let i = 0; i < cols; i++) {
+        if (characters[i][j] !== ' ') {
+          // Calculate color based on brightness
+          const b = brightness[i][j];
+          if (b > 0.8) {
+            // Bright white for newest characters
+            terminal.write(`\x1b[1;97m${characters[i][j]}\x1b[0m`);
+          } else if (b > 0.5) {
+            // Green for fading characters
+            terminal.write(`\x1b[1;32m${characters[i][j]}\x1b[0m`);
+          } else if (b > 0.3) {
+            // Darker green for older characters
+            terminal.write(`\x1b[0;32m${characters[i][j]}\x1b[0m`);
+          } else {
+            // Darkest green for oldest characters
+            terminal.write(`\x1b[2;32m${characters[i][j]}\x1b[0m`);
+          }
+        } else {
+          terminal.write(' ');
+        }
       }
-    }, 50); // Adjust speed of matrix effect
+      if (j < rows - 1) {
+        terminal.write('\r\n');
+      }
+    }
   };
   
-  // Start the animation loop
-  loop();
+  // Start animation
+  animationFrameId = requestAnimationFrame(update);
   
-  // Return a cleanup function
+  // Return cleanup function
   return () => {
-    isRunning = false;
+    // Cancel animation
+    cancelAnimationFrame(animationFrameId);
+    // Clear terminal completely
+    terminal.write("\x1b[H\x1b[2J"); // Clear entire screen and move cursor to home
+    terminal.clear();
   };
-};
+}

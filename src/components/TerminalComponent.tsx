@@ -15,6 +15,7 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({
 }) => {
   const terminalRef = useRef<HTMLDivElement>(null);
   const termInstanceRef = useRef<ReturnType<typeof createTerminal> | null>(null);
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize terminal on mount
   useEffect(() => {
@@ -31,20 +32,58 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({
       if (termInstanceRef.current) {
         termInstanceRef.current.dispose();
       }
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
     };
   }, [initialCommand]);
 
-  // Handle window resize events
+  // Handle window resize events with debouncing
   useEffect(() => {
     const handleWindowResize = () => {
-      if (termInstanceRef.current) {
-        termInstanceRef.current.handleResize();
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
       }
+      
+      resizeTimeoutRef.current = setTimeout(() => {
+        if (termInstanceRef.current) {
+          termInstanceRef.current.handleResize();
+        }
+      }, 100); // 100ms debounce
     };
 
     window.addEventListener('resize', handleWindowResize);
     return () => {
       window.removeEventListener('resize', handleWindowResize);
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Handle container resize with ResizeObserver
+  useEffect(() => {
+    if (!terminalRef.current) return;
+    
+    const resizeObserver = new ResizeObserver(() => {
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
+      
+      resizeTimeoutRef.current = setTimeout(() => {
+        if (termInstanceRef.current) {
+          termInstanceRef.current.handleResize();
+        }
+      }, 100); // 100ms debounce
+    });
+    
+    resizeObserver.observe(terminalRef.current);
+    
+    return () => {
+      resizeObserver.disconnect();
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
     };
   }, []);
 

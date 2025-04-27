@@ -1,10 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🖥️ Terminal Portfolio
 
-## Getting Started
+A modern, interactive terminal-style portfolio built with Next.js, TypeScript, and Tailwind CSS. This project mimics a desktop environment with a functional terminal, window management system, and various interactive components.
 
-First, run the development server:
+![Terminal Portfolio Screenshot](public/screenshot.png)
+
+## ✨ Features
+
+- 💻 Fully functional terminal with real commands
+- 🪟 Window management system (drag, resize, minimize, maximize)
+- 🎮 Interactive games explorer
+- 🎵 Built-in music player
+- 📁 File system navigation
+- 🌈 Theme switching with Catppuccin color scheme
+- 💫 Window wobble effects for a dynamic feel
+- 📱 Responsive design
+
+## 🚀 Getting Started
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/terminal-portfolio.git
+
+# Navigate to the project directory
+cd terminal-portfolio
+
+# Install dependencies
+npm install
+# or
+yarn
+# or
+pnpm install
+# or
+bun install
+
+# Start the development server
 npm run dev
 # or
 yarn dev
@@ -16,21 +45,57 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔍 Terminal Commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The terminal supports various commands to showcase your skills and projects:
 
-## Learn More
+- `help` - Display available commands
+- `about` - Display information about me
+- `projects` - List my projects
+- `skills` - Show my technical skills
+- `contact` - Display my contact information
+- `clear` - Clear the terminal
+- `echo [text]` - Print text to the terminal
+- `ls` - List files and directories
+- `cat [filename]` - Display file contents
+- `cmatrix` - Start the Matrix effect (press any key to exit)
+- `fastfetch` - Display system information in a stylish way
 
-To learn more about Next.js, take a look at the following resources:
+## 🎨 Customization
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+You can customize this portfolio by:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Updating the command responses in `/src/utils/commands.ts`
+2. Modifying the window styles in `/src/components/WindowManager.tsx`
+3. Changing the background in `/src/components/background-switcher.tsx`
+4. Adding your own themes to `/src/components/theme-provider.tsx`
 
-## Deploy on Vercel
+## 🛠️ Technologies Used
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Frontend**: Next.js, React, TypeScript
+- **Styling**: Tailwind CSS, shadcn/ui components
+- **Terminal**: xterm.js
+- **Animation**: Framer Motion, Anime.js
+- **State Management**: React Hooks
+- **UI Components**: Radix UI
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 👨‍💻 About Me
+
+I'm a passionate web developer with expertise in building interactive and responsive applications. I specialize in modern JavaScript frameworks like React and Next.js, and I love creating engaging user experiences.
+
+My skills include:
+- Frontend: React, TypeScript, Next.js, HTML, CSS, TailwindCSS
+- Backend: Node.js, Express, MongoDB, PostgreSQL
+- Tools: Git, Docker, Webpack, Jest
+- Design: Figma, Adobe XD
+
+## 📞 Contact
+
+- Email: your.email@example.com
+- GitHub: [github.com/yourusername](https://github.com/yourusername)
+- LinkedIn: [linkedin.com/in/yourusername](https://linkedin.com/in/yourusername)
+- Twitter: [@yourusername](https://twitter.com/yourusername)
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.

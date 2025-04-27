@@ -4,9 +4,32 @@ import { runMatrixEffect } from "./terminal";
 // Track active effects for cleanup
 let activeMatrixEffect: (() => void) | null = null;
 
+// Function to get system information (mocked data for the fastfetch command)
+const getSystemInfo = () => {
+  return {
+    user: 'thuanc177@cachyos',
+    os: 'CachyOS x86_64',
+    host: 'Nitro AN515-58',
+    kernel: 'Linux 6.14.4-2-cachyos',
+    uptime: '3 hours, 8 mins',
+    packages: '1979 (pacman)',
+    shell: 'fish 4.0.2',
+    displays: [
+      '1920x1080 @ 100Hz [External]',
+      '1920x1080 @ 144Hz [Built-in]'
+    ],
+    de: 'KDE Plasma 6.3.4',
+    wm: 'KWin (Wayland)',
+    cpu: 'i5-12500H (16) @ 4.50 GHz',
+    gpu: 'NVIDIA RTX 3050 Mobile / Intel Iris Xe',
+    memory: '13.79 GiB / 31.05 GiB (44%)',
+    locale: 'en_US.UTF-8'
+  };
+};
+
 // Define commands interface with xterm Terminal type
 interface Commands {
-  [key: string]: (terminal: Terminal, args: string[]) => Promise<void>;
+  [key: string]: (terminal: Terminal, args?: string[]) => Promise<void>;
 }
 
 export const commands: Commands = {
@@ -22,6 +45,7 @@ export const commands: Commands = {
     terminal.writeln("  skills   - List my skills");
     terminal.writeln("  contact  - Show my contact information");
     terminal.writeln("  cmatrix  - Run matrix effect (Ctrl+C to exit)");
+    terminal.writeln("  fastfetch - Display system information");
   },
   
   clear: async (terminal: Terminal) => {
@@ -119,5 +143,34 @@ export const commands: Commands = {
       terminal.clear();
       terminal.write("Matrix effect terminated.\r\n");
     });
+  },
+
+  fastfetch: async (terminal: Terminal) => {
+    // Get system information (this would be real data in an actual implementation)
+    const info = getSystemInfo();
+    
+    // Clear the terminal
+    terminal.clear();
+    
+    // Display mock fastfetch output with arch linux style logo
+    terminal.writeln("");
+    terminal.writeln("\x1b[36m           .-------------------------:\x1b[0m                    \x1b[1;32m" + info.user + "\x1b[0m");
+    terminal.writeln("\x1b[36m          .+=========================.\x1b[0m                    \x1b[1;37m-----------------\x1b[0m");
+    terminal.writeln("\x1b[36m         :++===++==================-\x1b[0m       \x1b[36m:++-\x1b[0m           \x1b[1;37mOS:\x1b[0m " + info.os);
+    terminal.writeln("\x1b[36m        :*++====+++++=============-\x1b[0m        \x1b[36m.==:\x1b[0m           \x1b[1;37mHost:\x1b[0m " + info.host);
+    terminal.writeln("\x1b[36m       -*+++=====+***++==========:\x1b[0m                        \x1b[1;37mKernel:\x1b[0m " + info.kernel);
+    terminal.writeln("\x1b[36m      =*++++========------------:\x1b[0m                         \x1b[1;37mUptime:\x1b[0m " + info.uptime);
+    terminal.writeln("\x1b[36m     =*+++++=====-\x1b[0m                     \x1b[36m...\x1b[0m                \x1b[1;37mPackages:\x1b[0m " + info.packages);
+    terminal.writeln("\x1b[36m   .+*+++++=-===:\x1b[0m                    \x1b[36m.=+++=:\x1b[0m              \x1b[1;37mShell:\x1b[0m " + info.shell);
+    terminal.writeln("\x1b[36m  :++++=====-==:\x1b[0m                     \x1b[36m-*****+\x1b[0m              \x1b[1;37mDisplay 1:\x1b[0m " + info.displays[0]);
+    terminal.writeln("\x1b[36m :++========-=.\x1b[0m                      \x1b[36m.=+**+.\x1b[0m              \x1b[1;37mDisplay 2:\x1b[0m " + info.displays[1]);
+    terminal.writeln("\x1b[36m.+===========-.\x1b[0m                          \x1b[36m.\x1b[0m                 \x1b[1;37mDE:\x1b[0m " + info.de);
+    terminal.writeln("\x1b[36m :+++++++====-\x1b[0m                                \x1b[36m.--==-.     \x1b[0m \x1b[1;37mWM:\x1b[0m " + info.wm);
+    terminal.writeln("\x1b[36m  :++==========.\x1b[0m                             \x1b[36m:+++++++:\x1b[0m    \x1b[1;37mCPU:\x1b[0m " + info.cpu);
+    terminal.writeln("\x1b[36m   .-===========.\x1b[0m                            \x1b[36m=*****+*+\x1b[0m    \x1b[1;37mGPU:\x1b[0m " + info.gpu);
+    terminal.writeln("\x1b[36m    .-===========:\x1b[0m                           \x1b[36m.+*****+:\x1b[0m    \x1b[1;37mMemory:\x1b[0m " + info.memory);
+    terminal.writeln("\x1b[36m      -=======++++:::::::::::::::::::::::::-:  .---:\x1b[0m      \x1b[1;37mLocale:\x1b[0m " + info.locale);
+    terminal.writeln("");
+    terminal.writeln("");
   },
 };

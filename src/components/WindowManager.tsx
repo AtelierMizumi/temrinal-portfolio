@@ -20,7 +20,7 @@ interface WindowProps {
   maximizable?: boolean;
   onClose?: () => void;
   onFocus?: () => void;
-  showDate?: boolean; // New prop to control date display
+  showDate?: boolean;
 }
 
 export const Window: React.FC<WindowProps> = ({
@@ -152,6 +152,7 @@ export const Window: React.FC<WindowProps> = ({
       // Calculate new position
       const deltaX = e.clientX - dragStartPosition.current.x;
       const deltaY = e.clientY - dragStartPosition.current.y;
+      
       const newX = dragStartPosition.current.windowX + deltaX;
       const newY = dragStartPosition.current.windowY + deltaY;
       
@@ -161,11 +162,16 @@ export const Window: React.FC<WindowProps> = ({
       const deltaX = e.clientX - resizeStartPosition.current.x;
       const deltaY = e.clientY - resizeStartPosition.current.y;
       
+      // Apply minimum size constraints
+      const newWidth = Math.max(300, size.width + deltaX); // Increased minimum width
+      const newHeight = Math.max(200, size.height + deltaY); // Increased minimum height
+      
       setSize({
-        width: Math.max(200, size.width + deltaX),
-        height: Math.max(100, size.height + deltaY),
+        width: newWidth,
+        height: newHeight,
       });
       
+      // Rather than constantly updating the position, update it once before setting a new move
       resizeStartPosition.current = {
         x: e.clientX,
         y: e.clientY,
@@ -174,8 +180,24 @@ export const Window: React.FC<WindowProps> = ({
   };
 
   const handleMouseUp = () => {
+    // If we were resizing, dispatch a custom event to notify terminals
+    if (isResizing) {
+      const resizeEndEvent = new CustomEvent('terminal-resize-end', { 
+        bubbles: true,
+        detail: { id }
+      });
+      windowRef.current?.dispatchEvent(resizeEndEvent);
+      
+      // Add a small delay before setting isResizing to false
+      // This gives terminals time to adjust
+      setTimeout(() => {
+        setIsResizing(false);
+      }, 100);
+    } else {
+      setIsResizing(false);
+    }
+    
     setIsDragging(false);
-    setIsResizing(false);
   };
 
   useEffect(() => {

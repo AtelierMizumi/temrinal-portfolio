@@ -16,6 +16,8 @@ const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
   const terminalInstanceRef = useRef<any>(null);
   const fitAddonRef = useRef<FitAddon | null>(null);
   const [terminalReady, setTerminalReady] = useState(false);
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isResizingRef = useRef<boolean>(false);
   
   useEffect(() => {
     if (!terminalRef.current) return;
@@ -80,16 +82,22 @@ const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
       fitAddon.fit();
     }, 100);
     
-    // Handle window resize
+    // Handle window resize with debouncing
     const handleResize = () => {
-      if (fitAddon && terminalRef.current?.offsetParent) {
-        try {
-          fitAddon.fit();
-          terminal.scrollToBottom();
-        } catch (e) {
-          console.error('Error fitting terminal:', e);
-        }
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
       }
+      
+      resizeTimeoutRef.current = setTimeout(() => {
+        if (fitAddon && terminalRef.current?.offsetParent) {
+          try {
+            fitAddon.fit();
+            terminal.scrollToBottom();
+          } catch (e) {
+            console.error('Error fitting terminal:', e);
+          }
+        }
+      }, 150); // Slightly longer debounce to ensure window has settled
     };
 
     window.addEventListener('resize', handleResize);
@@ -178,6 +186,9 @@ const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
     // Clean up on unmount
     return () => {
       window.removeEventListener('resize', handleResize);
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
       if (terminalInstanceRef.current) {
         terminalInstanceRef.current.dispose();
       }
@@ -203,19 +214,27 @@ const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
     terminal.write('\r\n$ ');
   };
 
-  // Handle manual resize when container dimensions change
+  // Handle ResizeObserver with better debouncing
   useEffect(() => {
     const resizeObserver = new ResizeObserver(() => {
-      if (fitAddonRef.current && terminalRef.current?.offsetParent) {
-        try {
-          fitAddonRef.current.fit();
-          if (terminalInstanceRef.current?.terminal) {
-            terminalInstanceRef.current.terminal.scrollToBottom();
-          }
-        } catch (e) {
-          console.error('Error during resize:', e);
-        }
+      if (isResizingRef.current) return; // Don't respond during active resize
+      
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
       }
+      
+      resizeTimeoutRef.current = setTimeout(() => {
+        if (fitAddonRef.current && terminalRef.current?.offsetParent) {
+          try {
+            fitAddonRef.current.fit();
+            if (terminalInstanceRef.current?.terminal) {
+              terminalInstanceRef.current.terminal.scrollToBottom();
+            }
+          } catch (e) {
+            console.error('Error during resize:', e);
+          }
+        }
+      }, 150); // Slightly longer delay to let resize settle
     });
     
     if (terminalRef.current) {
@@ -224,8 +243,83 @@ const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
     
     return () => {
       resizeObserver.disconnect();
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current);
+      }
     };
   }, [terminalReady]);
+  
+  // Add listeners for window resize events
+  useEffect(() => {
+    const handleMouseDown = () => {
+      isResizingRef.current = true;
+    };
+    
+    const handleMouseUp = () => {
+      isResizingRef.current = false;
+      
+      // After mouse up, fit the terminal once more
+      setTimeout(() => {
+        if (fitAddonRef.current && terminalRef.current?.offsetParent) {
+          try {
+            fitAddonRef.current.fit();
+            if (terminalInstanceRef.current?.terminal) {
+              terminalInstanceRef.current.terminal.scrollToBottom();
+            }
+          } catch (e) {
+            console.error('Error after resize:', e);
+          }
+        }
+      }, 200);
+    };
+    
+    // Get any resize handles from parent containers
+    const resizeHandles = document.querySelectorAll('.absolute.bottom-0.right-0.w-4.h-4.cursor-se-resize');
+    
+    resizeHandles.forEach(handle => {
+      handle.addEventListener('mousedown', handleMouseDown);
+    });
+    
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    return () => {
+      resizeHandles.forEach(handle => {
+        handle.removeEventListener('mousedown', handleMouseDown);
+      });
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
+  
+  // Listen for terminal-resize-end events from WindowManager
+  useEffect(() => {
+    const handleTerminalResizeEnd = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      
+      // Set short timeout to let the window fully settle
+      setTimeout(() => {
+        if (fitAddonRef.current && terminalRef.current?.offsetParent) {
+          try {
+            // Force a complete terminal resize and refit
+            fitAddonRef.current.fit();
+            
+            // If we have a terminal instance, scroll to make sure content is visible
+            if (terminalInstanceRef.current?.terminal) {
+              terminalInstanceRef.current.terminal.scrollToBottom();
+            }
+          } catch (e) {
+            console.error('Error during terminal resize:', e);
+          }
+        }
+      }, 100);
+    };
+    
+    // Listen for the custom event from WindowManager
+    document.addEventListener('terminal-resize-end', handleTerminalResizeEnd);
+    
+    return () => {
+      document.removeEventListener('terminal-resize-end', handleTerminalResizeEnd);
+    };
+  }, []);
   
   return (
     <div 
