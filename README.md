@@ -84,17 +84,14 @@ You can customize this portfolio by:
 I'm a passionate web developer with expertise in building interactive and responsive applications. I specialize in modern JavaScript frameworks like React and Next.js, and I love creating engaging user experiences.
 
 My skills include:
-- Frontend: React, TypeScript, Next.js, HTML, CSS, TailwindCSS
-- Backend: Node.js, Express, MongoDB, PostgreSQL
-- Tools: Git, Docker, Webpack, Jest
-- Design: Figma, Adobe XD
+- Frontend: React, TypeScript, Next.js, TailwindCSS
+- Backend: Node.js
+- Tools: Git, Docker
 
 ## 📞 Contact
 
-- Email: your.email@example.com
-- GitHub: [github.com/yourusername](https://github.com/yourusername)
-- LinkedIn: [linkedin.com/in/yourusername](https://linkedin.com/in/yourusername)
-- Twitter: [@yourusername](https://twitter.com/yourusername)
+- Email: contact@thuanc177.me
+- GitHub: [github.com/AtelierMizumi](https://github.com/AtelierMizumi)
 
 ## 📄 License
 
