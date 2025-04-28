@@ -272,6 +272,56 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
                 Artist: <span className="text-white">{currentSong?.artist || "Unknown"}</span>
               </p>
               <p className="mb-4">
+                Music by <a href="https://soundcloud.com/makencat" className="text-blue-400 hover:underline">MakenCat</a>
+              </p>
+              <div className="bg-gray-800 bg-opacity-50 p-2 rounded-md text-xs">
+                <p className="mb-1">All music used with permission from the artist.</p>
+                <p className="mb-1">If you believe your copyrighted work has been used without permission, please contact us with the required information.</p>
+                <p>Send DMCA notices to: [contact email]</p>
+              </div>
+            </div>
+            <button 
+              onClick={() => setShowInfo(false)}
+              className="w-full py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white font-medium"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Album cover and song info */}
+      <div className="flex-grow flex flex-col items-center justify-center mb-6">
+        <div className="w-48 h-48 bg-[#252525] rounded-lg overflow-hidden shadow-lg mb-4 relative">
+          {currentSong?.cover ? (
+            <img 
+              src={currentSong.cover} 
+              alt={currentSong.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-700">
+              <Music className="w-16 h-16 text-white opacity-40" />
+            </div>
+          )}
+          
+          <div className={`absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center transition-opacity ${isPlaying ? 'opacity-0' : 'opacity-100'}`}>
+            <div className="w-16 h-16 bg-white bg-opacity-30 rounded-full flex items-center justify-center backdrop-blur-sm">
+              {isPlaying ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8 ml-1" />}
+            </div>
+          </div>
+        </div>
+        
+        <div className="text-center">
+          <h3 className="text-xl font-semibold text-white mb-1">
+            {currentSong?.name || "No song selected"}
+          </h3>
+          <p className="text-gray-400">
+            {currentSong?.artist || "Unknown artist"}
+          </p>
+        </div>
+      </div>
+      
       {/* Credits and DMCA notice */}
       <div className="text-xs text-gray-500 mb-4 text-center">
         <p className="mb-1">
