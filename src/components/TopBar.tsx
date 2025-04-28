@@ -12,18 +12,23 @@ import {
   SkipBack,
   X,
   Volume2,
-  VolumeX
+  VolumeX,
+  ImageIcon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 import fs from 'fs';
 import path from 'path';
 import { useTheme } from "./theme-provider";
+import ColorPalette from './ColorPalette';
+import { animate } from "animejs";
 
 interface TopBarProps {
-  onArchClick: () => void;
-  onMusicOpen?: () => void;
+  onArchClick?: () => void;
   onBackgroundChange?: () => void;
+  onMusicOpen?: () => void;
+  onColorChange?: (colorHsl: string, colorName: string) => void;
+  onBackgroundSelectorOpen?: () => void;
 }
 
 interface Song {
@@ -33,7 +38,13 @@ interface Song {
   path: string;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({ onArchClick, onMusicOpen, onBackgroundChange }) => {
+export const TopBar: React.FC<TopBarProps> = ({ 
+  onArchClick = () => {}, 
+  onBackgroundChange, 
+  onMusicOpen,
+  onColorChange,
+  onBackgroundSelectorOpen
+}) => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isMusicPlayerOpen, setIsMusicPlayerOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -44,8 +55,8 @@ export const TopBar: React.FC<TopBarProps> = ({ onArchClick, onMusicOpen, onBack
   const [backgrounds, setBackgrounds] = useState<string[]>([]);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   
-  // Use theme context
-  const { cycleTheme } = useTheme();
+  // Use the enhanced theme context
+  const { cycleTheme, changeAccentColor } = useTheme();
 
   // Demo songs data
   const songs: Song[] = [
@@ -70,10 +81,13 @@ export const TopBar: React.FC<TopBarProps> = ({ onArchClick, onMusicOpen, onBack
         // In a real app, this would be a server API call
         // For now, let's assume we have these backgrounds
         setBackgrounds([
-          "/background/bg1.jpg",
-          "/background/bg2.jpg",
-          "/background/bg3.jpg",
-          "/background/bg4.jpg",
+          "/background/cyan-mountains.jpg",
+          "/background/islands.jpg",
+          "/background/yosemite.png",
+          "/background/blocks.png",
+          "/background/cat_pacman.png",
+          "/background/unicat.png",
+          "/background/nilou.mp4",
         ]);
       } catch (error) {
         console.error("Failed to load backgrounds:", error);
@@ -175,6 +189,24 @@ export const TopBar: React.FC<TopBarProps> = ({ onArchClick, onMusicOpen, onBack
     }
   };
 
+  // Handle opening background selector
+  const handleBackgroundSelectorOpen = () => {
+    if (onBackgroundSelectorOpen) {
+      onBackgroundSelectorOpen();
+    }
+  };
+
+  // Replace handleColorChange to use the context
+  const handleColorChange = (colorHsl: string, colorName: string) => {
+    // Use the context function instead of direct DOM manipulation
+    changeAccentColor(colorHsl, colorName);
+    
+    // Call external handler if provided
+    if (onColorChange) {
+      onColorChange(colorHsl, colorName);
+    }
+  };
+
   return (
     <>
       <div className="absolute top-0 left-0 right-0 h-12 bg-[#252525]/40 backdrop-blur-lg border-b border-[#424242]/30 flex items-center justify-between px-4 z-50">
@@ -218,8 +250,18 @@ export const TopBar: React.FC<TopBarProps> = ({ onArchClick, onMusicOpen, onBack
           </div>
         </div>
 
-        {/* Right section - Theme button */}
-        <div className="flex items-center">
+        {/* Right section - Theme buttons */}
+        <div className="flex items-center space-x-3">
+          <ColorPalette onColorChange={handleColorChange} />
+          
+          <button 
+            onClick={handleBackgroundSelectorOpen}
+            className="bg-[#2a2a2a]/60 backdrop-blur-md flex items-center justify-center w-9 h-9 rounded-full hover:bg-[#3a3a3a]/60 transition-colors"
+            title="Select Background"
+          >
+            <ImageIcon className="w-4 h-4" />
+          </button>
+          
           <button 
             onClick={changeBackground}
             className="theme-button bg-[#2a2a2a]/60 backdrop-blur-md flex items-center justify-center w-9 h-9 rounded-full hover:bg-[#3a3a3a]/60 transition-colors"

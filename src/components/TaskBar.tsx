@@ -3,9 +3,10 @@ import { animate } from "animejs";
 
 interface TaskBarProps {
   onArchClick: () => void;
+  extraButtons?: React.ReactNode;
 }
 
-export const TaskBar: React.FC<TaskBarProps> = ({ onArchClick }) => {
+export const TaskBar: React.FC<TaskBarProps> = ({ onArchClick, extraButtons }) => {
   const [currentTime, setCurrentTime] = useState<string>("");
   const taskbarRef = useRef<HTMLDivElement>(null);
 
@@ -37,31 +38,48 @@ export const TaskBar: React.FC<TaskBarProps> = ({ onArchClick }) => {
     }
   }, []);
 
+  // Function to play click sound
+  const playClickSound = () => {
+    const audio = new Audio('/sounds/click.mp3');
+    audio.volume = 0.3;
+    audio.play().catch(err => console.error('Error playing sound:', err));
+  };
+
   return (
     <div 
       ref={taskbarRef}
-      className="taskbar absolute bottom-0 left-0 right-0 h-12 flex items-center justify-between px-3 z-10"
-      style={{
-        backgroundColor: "rgba(20, 22, 30, 0.7)",
-        backdropFilter: "blur(10px)",
-        borderTop: "1px solid rgba(81, 87, 109, 0.3)",
-      }}
+      className="taskbar w-full h-12 fixed bottom-0 flex items-center justify-between px-4 z-50"
     >
-      <div className="flex items-center">
+      <div className="left flex items-center gap-4">
         <button 
-          className="arch-button w-8 h-8 rounded-full flex items-center justify-center mr-2 transition-all"
+          className="arch-icon w-8 h-8 rounded-full overflow-hidden hover:scale-110 transition"
           onClick={() => {
+            playClickSound();
             onArchClick();
           }}
-          style={{
-            backgroundColor: "rgba(41, 98, 255, 0.9)",
-            boxShadow: "0 0 10px rgba(41, 98, 255, 0.5)",
+        >
+          <img 
+            src="/arch.svg" 
+            alt="Arch" 
+            className="w-full h-full object-contain filter brightness-110"
+          />
+        </button>
+        
+        <button 
+          className="taskbar-button"
+          onClick={(e) => {
+            playClickSound();
+            animate(e.currentTarget, {
+              scale: [1, 1.2, 1],
+              duration: 300,
+              easing: 'easeInOutQuad'
+            });
           }}
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
+          <svg 
+            width="18" 
+            height="18" 
+            viewBox="0 0 24 24" 
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className="text-white"
@@ -77,9 +95,14 @@ export const TaskBar: React.FC<TaskBarProps> = ({ onArchClick }) => {
         </button>
       </div>
 
+      <div className="center flex items-center gap-2">
+        {extraButtons}
+      </div>
+
       <div 
         className="time text-text text-sm"
         onClick={(e) => {
+          playClickSound();
           animate(e.currentTarget, {
             scale: [1, 1.1, 1],
             duration: 300,

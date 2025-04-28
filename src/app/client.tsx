@@ -10,6 +10,7 @@ import { WobbleProvider } from "../components/window-wobble-provider";
 import { ThemeProvider } from "../components/theme-provider";
 import { animate, createScope } from "animejs";
 import MusicPlayer from "../components/MusicPlayer";
+import BackgroundSelector from "../components/BackgroundSelector";
 
 // Dynamically import Terminal to prevent SSR issues
 const Terminal = dynamic(() => import('../components/Terminal'), { 
@@ -22,7 +23,7 @@ const Terminal = dynamic(() => import('../components/Terminal'), {
 // Type for windows
 interface WindowData {
   id: string;
-  type: "terminal" | "game" | "explorer" | "music";
+  type: "terminal" | "game" | "explorer" | "music" | "backgroundSelector";
   zIndex: number;
   initialX: number;
   initialY: number;
@@ -47,26 +48,60 @@ export const Client: React.FC = () => {
   const [activeWindowId, setActiveWindowId] = useState<string>("terminal-1");
   const [maxZIndex, setMaxZIndex] = useState(1);
   const [gamesExplorerOpen, setGamesExplorerOpen] = useState(false);
-  const [currentBackground, setCurrentBackground] = useState("/background/bg1.jpg");
+  const [currentBackground, setCurrentBackground] = useState("/background/cyan-mountains.jpg");
   const [backgroundIndex, setBackgroundIndex] = useState(0);
+  const [isVideoBackground, setIsVideoBackground] = useState(false);
   
   const clientRef = useRef<HTMLDivElement>(null);
   const animationScope = useRef<any>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Available backgrounds
-  const backgrounds = [
-    "/background/bg1.jpg",
-    "/background/bg2.jpg",
-    "/background/bg3.jpg",
-    "/background/bg4.jpg",
-  ];
+  const backgrounds = React.useMemo(() => [
+    "/background/cyan-mountains.jpg",
+    "/background/islands.jpg",
+    "/background/blue_green.png",
+    "/background/blocks.png",
+    "/background/unicat.png",
+    "/background/blue_green.png",
+    "/background/cyan-gradient.png",
+    "/background/nilou.mp4",
+  ], []);
+
+  // Function to set background
+  const setBackground = useCallback((backgroundPath: string) => {
+    setCurrentBackground(backgroundPath);
+    setIsVideoBackground(backgroundPath.endsWith('.mp4') || backgroundPath.endsWith('.webm'));
+  }, []);
 
   // Function to cycle backgrounds
   const cycleBackground = useCallback(() => {
     const nextIndex = (backgroundIndex + 1) % backgrounds.length;
     setBackgroundIndex(nextIndex);
-    setCurrentBackground(backgrounds[nextIndex]);
-  }, [backgroundIndex, backgrounds]);
+    const nextBackground = backgrounds[nextIndex];
+    setBackground(nextBackground);
+  }, [backgroundIndex, backgrounds, setBackground]);
+
+  // Function to open background selector
+  const openBackgroundSelector = useCallback(() => {
+    const newZIndex = maxZIndex + 1;
+    const newId = `background-selector-${Date.now()}`;
+    
+    setWindows((prev) => [
+      ...prev,
+      {
+        id: newId,
+        type: "backgroundSelector",
+        zIndex: newZIndex,
+        initialX: 150,
+        initialY: 100,
+        title: "Background Selector",
+      },
+    ]);
+    
+    setMaxZIndex(newZIndex);
+    setActiveWindowId(newId);
+  }, [maxZIndex]);
 
   // Function to bring a window to front
   const bringToFront = useCallback((id: string) => {
@@ -189,12 +224,23 @@ export const Client: React.FC = () => {
         <WindowManager>
           <div ref={clientRef} className="relative w-screen h-screen overflow-hidden bg-background">
             {/* Desktop background */}
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-all duration-500"
-              style={{
-                backgroundImage: `url('${currentBackground}')`,
-              }}
-            />
+            {isVideoBackground ? (
+              <video
+                ref={videoRef}
+                className="absolute inset-0 w-full h-full object-cover"
+                src={currentBackground}
+                autoPlay
+                loop
+                muted
+              />
+            ) : (
+              <div
+                className="absolute inset-0 bg-cover bg-center transition-all duration-500"
+                style={{
+                  backgroundImage: `url('${currentBackground}')`,
+                }}
+              />
+            )}
 
             {/* Windows */}
             {windows.map((window) => {
@@ -270,6 +316,29 @@ export const Client: React.FC = () => {
                   </Window>
                 );
               }
+              if (window.type === "backgroundSelector") {
+                return (
+                  <Window
+                    key={window.id}
+                    id={window.id}
+                    title={window.title}
+                    zIndex={window.zIndex}
+                    initialX={window.initialX}
+                    initialY={window.initialY}
+                    initialWidth={500}
+                    initialHeight={400}
+                    onClose={() => closeWindow(window.id)}
+                    onFocus={() => bringToFront(window.id)}
+                    showDate={false}
+                  >
+                    <BackgroundSelector 
+                      backgrounds={backgrounds}
+                      currentBackground={currentBackground}
+                      onSelect={setBackground}
+                    />
+                  </Window>
+                );
+              }
               return null;
             })}
 
@@ -291,6 +360,7 @@ export const Client: React.FC = () => {
               }}
               onMusicOpen={openMusicPlayer}
               onBackgroundChange={cycleBackground}
+              onBackgroundSelectorOpen={openBackgroundSelector}
             />
             
             <ArchMenu

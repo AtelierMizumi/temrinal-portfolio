@@ -110,11 +110,9 @@ export const commands: Commands = {
   
   contact: async (terminal: Terminal) => {
     terminal.writeln("\x1b[1;36mContact Information:\x1b[0m");
-    terminal.writeln("Email: example@example.com");
-    terminal.writeln("GitHub: github.com/username");
-    terminal.writeln("LinkedIn: linkedin.com/in/username");
-    terminal.writeln("Twitter: @username");
-  },
+    terminal.writeln("Email: contact@thuanc177.me");
+    terminal.writeln("GitHub: github.com/Ateliermizumi");
+    },
   
   cmatrix: async (terminal: Terminal) => {
     // Clear any existing matrix effect

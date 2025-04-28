@@ -68,26 +68,25 @@ export const createTerminal = ({
       try {
         fitAddon.fit();
       } catch (e) {
-        console.error('Error fitting terminal:', e);
+        console.warn('Error fitting terminal:', e);
       }
-    }, 50);
+    }, 100);
   }
   
-  // Write initial command if provided
-  if (initialCommand) {
-    terminal.writeln(initialCommand);
-  }
-  
-  // Handle resize
+  // Safe resize handler with error checks
   const handleResize = () => {
+    if (!terminal || !terminal.element || !fitAddon) return;
+    
+    // Check if terminal is properly mounted before attempting to resize
+    if (!document.body.contains(terminal.element)) return;
+    
     try {
-      if (element?.offsetParent) {
+      // Make sure the renderer is initialized before attempting to fit
+      if (terminal._core && terminal._core._renderService) {
         fitAddon.fit();
-        // Ensure cursor is at the bottom after resize
-        terminal.scrollToBottom();
       }
-    } catch (error) {
-      console.error('Error resizing terminal:', error);
+    } catch (e) {
+      console.warn('Error resizing terminal:', e);
     }
   };
   
@@ -142,7 +141,7 @@ export function runMatrixEffect(terminal: Terminal): () => void {
     Array.from({ length: rows }, () => 0));
   
   // Animation frame ID for cleanup
-  let animationFrameId: number;
+  let animationFrameId: number | ReturnType<typeof setTimeout>;
   
   // Random characters for matrix effect
   const getRandomChar = () => {
@@ -155,7 +154,7 @@ export function runMatrixEffect(terminal: Terminal): () => void {
     // For each column
     for (let i = 0; i < cols; i++) {
       // Random chance to create a new drop
-      if (Math.random() < 0.02 && matrix[i] === 0) {
+      if (Math.random() < 0.015 && matrix[i] === 0) { 
         matrix[i] = 1;
       }
       
@@ -164,7 +163,7 @@ export function runMatrixEffect(terminal: Terminal): () => void {
         // Fade previous characters
         for (let j = 0; j < rows; j++) {
           if (brightness[i][j] > 0) {
-            brightness[i][j] -= 0.05; // Fade effect
+            brightness[i][j] -= 0.08; // Increased fade rate from 0.05 to 0.1
             if (brightness[i][j] <= 0) {
               brightness[i][j] = 0;
               characters[i][j] = ' ';
@@ -179,8 +178,11 @@ export function runMatrixEffect(terminal: Terminal): () => void {
           brightness[i][y] = 1; // Full brightness for new character
         }
         
-        // Move the drop down
-        matrix[i]++;
+        // Move the drop down slower
+        // Only advance the drop every other frame (50% chance)
+        if (Math.random() > 0.5) {
+          matrix[i]++;
+        }
         
         // If the drop goes off screen, reset it
         if (matrix[i] > rows + Math.random() * 15) {
@@ -192,8 +194,8 @@ export function runMatrixEffect(terminal: Terminal): () => void {
     // Render the matrix
     render();
     
-    // Continue animation
-    animationFrameId = requestAnimationFrame(update);
+    // Continue animation with a slight delay
+    animationFrameId = setTimeout(() => requestAnimationFrame(update), 100); // Added delay for slower movement
   };
   
   // Render function
@@ -202,7 +204,7 @@ export function runMatrixEffect(terminal: Terminal): () => void {
     
     for (let j = 0; j < rows; j++) {
       for (let i = 0; i < cols; i++) {
-        if (characters[i][j] !== ' ') {
+        if (characters[i][j] !== ' ' && brightness[i][j] > 0) {
           // Calculate color based on brightness
           const b = brightness[i][j];
           if (b > 0.8) {
@@ -229,12 +231,12 @@ export function runMatrixEffect(terminal: Terminal): () => void {
   };
   
   // Start animation
-  animationFrameId = requestAnimationFrame(update);
+  animationFrameId = setTimeout(() => requestAnimationFrame(update), 0);
   
   // Return cleanup function
   return () => {
     // Cancel animation
-    cancelAnimationFrame(animationFrameId);
+    clearTimeout(animationFrameId);
     // Clear terminal completely
     terminal.write("\x1b[H\x1b[2J"); // Clear entire screen and move cursor to home
     terminal.clear();

@@ -21,14 +21,22 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({
   useEffect(() => {
     if (!terminalRef.current) return;
 
-    // Create and configure the terminal
-    termInstanceRef.current = createTerminal({
-      element: terminalRef.current,
-      initialCommand,
-    });
+    // Add a small delay to ensure DOM is ready before terminal initialization
+    const initTimeout = setTimeout(() => {
+      // Create and configure the terminal
+      try {
+        termInstanceRef.current = createTerminal({
+          element: terminalRef.current,
+          initialCommand,
+        });
+      } catch (err) {
+        console.error('Failed to initialize terminal:', err);
+      }
+    }, 50);
 
     // Clean up on unmount
     return () => {
+      clearTimeout(initTimeout);
       if (termInstanceRef.current) {
         termInstanceRef.current.dispose();
       }
@@ -38,41 +46,27 @@ const TerminalComponent: React.FC<TerminalComponentProps> = ({
     };
   }, [initialCommand]);
 
-  // Handle window resize events with debouncing
+  // Handle resize events
   useEffect(() => {
-    const handleWindowResize = () => {
-      if (resizeTimeoutRef.current) {
-        clearTimeout(resizeTimeoutRef.current);
-      }
-      
-      resizeTimeoutRef.current = setTimeout(() => {
-        if (termInstanceRef.current) {
-          termInstanceRef.current.handleResize();
-        }
-      }, 100); // 100ms debounce
-    };
+    if (!terminalRef.current || !termInstanceRef.current) return;
 
-    window.addEventListener('resize', handleWindowResize);
-    return () => {
-      window.removeEventListener('resize', handleWindowResize);
-      if (resizeTimeoutRef.current) {
-        clearTimeout(resizeTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Handle container resize with ResizeObserver
-  useEffect(() => {
-    if (!terminalRef.current) return;
-    
+    // Create a ResizeObserver to monitor container size changes
     const resizeObserver = new ResizeObserver(() => {
+      if (!termInstanceRef.current) return;
+      
+      // Clear any pending resize to avoid excessive calls
       if (resizeTimeoutRef.current) {
         clearTimeout(resizeTimeoutRef.current);
       }
       
+      // Debounce the resize operation
       resizeTimeoutRef.current = setTimeout(() => {
-        if (termInstanceRef.current) {
-          termInstanceRef.current.handleResize();
+        try {
+          if (termInstanceRef.current && termInstanceRef.current.handleResize) {
+            termInstanceRef.current.handleResize();
+          }
+        } catch (err) {
+          console.error('Error resizing terminal:', err);
         }
       }, 100); // 100ms debounce
     });

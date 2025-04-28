@@ -71,7 +71,7 @@ const Terminal: React.FC<TerminalProps> = ({ className = '' }) => {
     // Allow terminal to fully initialize before writing to it
     setTimeout(() => {
       // Set some initial text
-      terminal.write('\x1b[1;32m$ Welcome to Terminal Portfolio!\x1b[0m\r\n');
+      terminal.write('\x1b[1;32m$ Welcomes to my cozy place!\x1b[0m\r\n');
       terminal.write('\x1b[1;37mType "help" to see available commands.\x1b[0m\r\n\r\n');
       terminal.write('$ ');
       
