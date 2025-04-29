@@ -81,14 +81,19 @@ export const TopBar: React.FC<TopBarProps> = ({
         // In a real app, this would be a server API call
         // For now, let's assume we have these backgrounds
         setBackgrounds([
-          "/background/cyan-mountains.jpg",
-          "/background/islands.jpg",
-          "/background/yosemite.png",
-          "/background/blocks.png",
-          "/background/cat_pacman.png",
-          "/background/unicat.png",
-          "/background/nilou.mp4",
+            "/backgrounds/cyan-mountains.jpg",
+            "/backgrounds/islands.jpg",
+            "/backgrounds/yosemite.png",
+            "/backgrounds/blocks.png",
+            "/backgrounds/cat_pacman.png",
+            "/backgrounds/comfy-home.png",
+            "/backgrounds/red_bkg5.png",
+            "/backgrounds/blue_green.png",
+            "/backgrounds/cyan-gradient.png",
+            "/backgrounds/nilou.mp4",
+            "/backgrounds/stonks9800-sunset.mp4",  
         ]);
+        
       } catch (error) {
         console.error("Failed to load backgrounds:", error);
       }
@@ -178,7 +183,7 @@ export const TopBar: React.FC<TopBarProps> = ({
     }
   };
 
-  // Change background/theme
+  // Change backgrounds/theme
   const changeBackground = () => {
     // Use theme context to cycle themes
     cycleTheme();

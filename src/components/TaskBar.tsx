@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { animate } from "animejs";
+import { ClickableButton, ClickableElement } from './common/ClickableElement';
 
 interface TaskBarProps {
   onArchClick: () => void;
@@ -38,37 +39,26 @@ export const TaskBar: React.FC<TaskBarProps> = ({ onArchClick, extraButtons }) =
     }
   }, []);
 
-  // Function to play click sound
-  const playClickSound = () => {
-    const audio = new Audio('/sounds/click.mp3');
-    audio.volume = 0.3;
-    audio.play().catch(err => console.error('Error playing sound:', err));
-  };
-
   return (
     <div 
       ref={taskbarRef}
       className="taskbar w-full h-12 fixed bottom-0 flex items-center justify-between px-4 z-50"
     >
       <div className="left flex items-center gap-4">
-        <button 
+        <ClickableButton 
           className="arch-icon w-8 h-8 rounded-full overflow-hidden hover:scale-110 transition"
-          onClick={() => {
-            playClickSound();
-            onArchClick();
-          }}
+          onClick={onArchClick}
         >
           <img 
             src="/arch.svg" 
             alt="Arch" 
             className="w-full h-full object-contain filter brightness-110"
           />
-        </button>
+        </ClickableButton>
         
-        <button 
+        <ClickableButton 
           className="taskbar-button"
           onClick={(e) => {
-            playClickSound();
             animate(e.currentTarget, {
               scale: [1, 1.2, 1],
               duration: 300,
@@ -92,7 +82,7 @@ export const TaskBar: React.FC<TaskBarProps> = ({ onArchClick, extraButtons }) =
               strokeLinejoin="round"
             />
           </svg>
-        </button>
+        </ClickableButton>
       </div>
 
       <div className="center flex items-center gap-2">
@@ -102,7 +92,6 @@ export const TaskBar: React.FC<TaskBarProps> = ({ onArchClick, extraButtons }) =
       <div 
         className="time text-text text-sm"
         onClick={(e) => {
-          playClickSound();
           animate(e.currentTarget, {
             scale: [1, 1.1, 1],
             duration: 300,

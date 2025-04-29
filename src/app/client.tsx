@@ -48,7 +48,7 @@ export const Client: React.FC = () => {
   const [activeWindowId, setActiveWindowId] = useState<string>("terminal-1");
   const [maxZIndex, setMaxZIndex] = useState(1);
   const [gamesExplorerOpen, setGamesExplorerOpen] = useState(false);
-  const [currentBackground, setCurrentBackground] = useState("/background/cyan-mountains.jpg");
+  const [currentBackground, setCurrentBackground] = useState("/backgrounds/cyan-mountains.jpg");
   const [backgroundIndex, setBackgroundIndex] = useState(0);
   const [isVideoBackground, setIsVideoBackground] = useState(false);
   
@@ -58,14 +58,17 @@ export const Client: React.FC = () => {
 
   // Available backgrounds
   const backgrounds = React.useMemo(() => [
-    "/background/cyan-mountains.jpg",
-    "/background/islands.jpg",
-    "/background/blue_green.png",
-    "/background/blocks.png",
-    "/background/unicat.png",
-    "/background/blue_green.png",
-    "/background/cyan-gradient.png",
-    "/background/nilou.mp4",
+    "/backgrounds/cyan-mountains.jpg",
+    "/backgrounds/islands.jpg",
+    "/backgrounds/yosemite.png",
+    "/backgrounds/blocks.png",
+    "/backgrounds/cat_pacman.png",
+    "/backgrounds/comfy-home.png",
+    "/backgrounds/red_bkg5.png",
+    "/backgrounds/blue_green.png",
+    "/backgrounds/cyan-gradient.png",
+    "/backgrounds/nilou.mp4",
+    "/backgrounds/stonks9800-sunset.mp4",
   ], []);
 
   // Function to set background

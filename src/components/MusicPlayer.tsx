@@ -275,9 +275,9 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
                 Music by <a href="https://soundcloud.com/makencat" className="text-blue-400 hover:underline">MakenCat</a>
               </p>
               <div className="bg-gray-800 bg-opacity-50 p-2 rounded-md text-xs">
-                <p className="mb-1">All music used with permission from the artist.</p>
+                <p className="mb-1">I do not own any music or image on this website</p>
                 <p className="mb-1">If you believe your copyrighted work has been used without permission, please contact us with the required information.</p>
-                <p>Send DMCA notices to: [contact email]</p>
+                <p>Send DMCA notices to: [contact@thuanc177.me]</p>
               </div>
             </div>
             <button 
@@ -320,28 +320,6 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({ className }) => {
             {currentSong?.artist || "Unknown artist"}
           </p>
         </div>
-      </div>
-      
-      {/* Credits and DMCA notice */}
-      <div className="text-xs text-gray-500 mb-4 text-center">
-        <p className="mb-1">
-          Music by <a href="https://soundcloud.com/makencat" className="text-blue-400 hover:underline">MakenCat</a>
-        </p>
-        <details className="text-left cursor-pointer">
-          <summary className="text-gray-500 hover:text-gray-400 transition">DMCA/Copyright Info</summary>
-          <div className="p-2 text-[10px] bg-gray-800 bg-opacity-50 mt-2 rounded-md">
-            <p className="mb-1">All music used with permission from the artist.</p>
-            <p className="mb-1">If you believe your copyrighted work has been used without permission, please contact us with:</p>
-            <ul className="list-disc list-inside ml-2 mb-1">
-              <li>Identification of the copyrighted work</li>
-              <li>Location of the material on our site</li>
-              <li>Your contact information</li>
-              <li>Statement of good faith belief</li>
-              <li>Statement of accuracy under penalty of perjury</li>
-            </ul>
-            <p>Send DMCA notices to: [contact email]</p>
-          </div>
-        </details>
       </div>
       
       {/* Playback controls */}
